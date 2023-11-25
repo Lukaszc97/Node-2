@@ -1,4 +1,4 @@
-import * as contactsModel from '../models/contactModel.js';
+import * as contactsModel from '#models/contactModel.js';
 
 
 const addContact = async (req, res, next) => {
@@ -11,4 +11,6 @@ const addContact = async (req, res, next) => {
   }
 };
 
+
 export default addContact;
+

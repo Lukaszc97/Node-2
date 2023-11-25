@@ -1,10 +1,10 @@
-import express from 'express';
 import Joi from 'joi';
+import express from 'express';
 import bcrypt from 'bcrypt';
+import userModel from '#models/userModel.js';
 
-import userModel from '../models/userModel.js';
-import avatar from './avatar.js'; 
-
+import avatar from './avatar.js';
+import { sendVerificationEmail, generateUniqueToken } from './emailUtils.js';
 
 const signupSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -13,8 +13,7 @@ const signupSchema = Joi.object({
 
 const router = express.Router();
 
-router.use('/avatars', avatar); 
-
+router.use('/avatars', avatar);
 
 router.post('/signup', async (req, res) => {
   try {
@@ -24,9 +23,6 @@ router.post('/signup', async (req, res) => {
     }
 
     const { email, password } = req.body;
-
-
-
 
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
@@ -39,17 +35,18 @@ router.post('/signup', async (req, res) => {
       email,
       password: hashedPassword,
       subscription: 'starter',
+      verificationToken: generateUniqueToken(),
     });
 
-    res.status(201).json({
+    if (newUser.verify) {
+      return res
+        .status(400)
+        .json({ message: 'Verification has already been passed' });
+    }
 
-      user: {
-        email: newUser.email,
-        subscription: newUser.subscription,
-    
-      },
+    await sendVerificationEmail(email, newUser.verificationToken);
 
-    });
+    return res.status(200).json({ message: 'Verification email sent' });
   } catch (error) {
     console.error('Error during signup:', error.message);
     res.status(500).json({ message: 'Internal Server Error' });

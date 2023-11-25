@@ -1,6 +1,7 @@
-import bcrypt from 'bcryptjs';
 import Joi from 'joi';
-import UserModel from '../models/userModel';
+import bcrypt from 'bcryptjs';
+import UserModel from '#models/userModel';
+
 import jwt from 'jsonwebtoken';
 
 const signup = async (req, res) => {
